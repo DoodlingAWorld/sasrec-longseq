@@ -29,5 +29,7 @@ def test_step_fn_called_once_per_batch():
 def test_empty_batches_no_zero_division():
     metrics = profile_throughput(lambda b: None, [])
     assert metrics["num_batches"] == 0
-    assert metrics["items_per_sec"] == 0
-    assert metrics["batches_per_sec"] == 0
+    assert metrics["total_sec"] == 0.0
+    assert metrics["sec_per_batch"] == 0.0
+    assert metrics["items_per_sec"] == 0.0
+    assert metrics["batches_per_sec"] == 0.0

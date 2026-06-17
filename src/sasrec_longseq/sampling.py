@@ -43,6 +43,9 @@ def sample_negatives_vectorized(
       loop that re-samples only the *still-colliding* entries is fine and expected,
       since you can't guarantee `neg != pos` in a single draw.)
     * Use `torch.randint(..., generator=generator)` so results are reproducible.
+    * Edge case: when `num_items` is small, many draws collide with `pos`, so your
+      re-sample loop must actually converge, including the extreme where only one
+      valid negative exists per position (e.g. num_items=2 with every target = 1).
 
     Hint (the standard pattern)
     ---------------------------

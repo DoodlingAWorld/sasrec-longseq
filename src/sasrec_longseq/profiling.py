@@ -49,8 +49,10 @@ def profile_throughput(
     -----------------
     1. Sum the item counts across all batches (use `count_items`).
     2. Record `time.perf_counter()`, call `step_fn(batch)` for each batch, record end.
-    3. Compute and return the metrics dict above. Guard against an empty `batches`
-       list (return zeros rather than dividing by zero).
+    3. Compute and return the metrics dict above. If `batches` is empty, return all
+       five fields as zero (no division by zero):
+         {"num_batches": 0, "total_sec": 0.0, "sec_per_batch": 0.0,
+          "batches_per_sec": 0.0, "items_per_sec": 0.0}
 
     Note
     ----

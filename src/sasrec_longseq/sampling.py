@@ -5,7 +5,7 @@ position with a Python `while` loop calling `_random_neq` for every single
 (user, time-step). That is O(B * L) Python-level work per batch and is a real
 bottleneck on a CPU-bound pipeline.
 
-Your job: sample the whole batch's negatives in a few vectorized tensor ops instead.
+So, what if we sample the whole batch's negatives in a few vectorized tensor ops instead.
 This is the canonical "feed data faster / do more with the same capacity" win.
 """
 
@@ -54,5 +54,13 @@ def sample_negatives_vectorized(
        re-draw ONLY those entries (boolean-mask assignment).
     3. Zero out the pad positions at the end.
     """
-    # COMPONENT A (see EXERCISES.md): implement this. Spec: tests/test_sampling.py
-    raise NotImplementedError("Component A: implement sample_negatives_vectorized")
+    neg = torch.randint(1, num_items + 1, pos.shape, generator=generator)
+    collision = (neg == pos) & (pos != 0)
+
+    while collision.any():
+        neg[collision] = torch.randint(1, num_items + 1, collision.shape, generator=generator)[collision]
+        collision = (neg == pos) & (pos != 0)
+
+    neg[pos == 0] = 0
+
+    return neg

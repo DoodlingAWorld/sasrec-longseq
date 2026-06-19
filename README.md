@@ -21,16 +21,50 @@ The SASRec model, data pipeline, baseline loss, and evaluation are vendored unde
 
 ## Results
 
-Measured on CPU with MovieLens-1M (default config: n=200, d=50, b=2).
+Measured on CPU with MovieLens-1M (model: d=50, b=2). Epoch counts are kept modest for a
+CPU budget, so absolute NDCG is below the full 300-epoch reproduction; the comparisons are
+apples-to-apples within each study.
 
-| Study | Result |
+### 1. Vectorized vs loop negative sampling
+
+| Negative sampling | items / sec |
 |---|---|
-| Negative sampling: loop vs vectorized | **74.2x faster** (31.4M vs 0.42M items/sec); see `scripts/profile_throughput.py` |
-| Loss: sampled-BCE vs full-softmax (val NDCG@10 / sec per epoch) | _running (`scripts/compare_losses.py`)_ |
-| Sequence-length scaling (Table V) | _running (`scripts/run_scaling.py`, plot in `experiments/runs/`)_ |
+| Per-position Python loop (Phase 1) | 422,712 |
+| Vectorized tensor ops | 31,381,565 |
+| **Speedup** | **74.2x** |
 
-The vectorized sampler replaces a per-position Python loop with batched tensor ops, the
-canonical "feed data faster" win. Forward+backward on the same machine runs at ~45K items/sec.
+Replacing the per-(user, step) Python loop with batched tensor ops is the canonical "feed
+data faster" win. For reference, forward+backward on the same machine runs at ~45K items/sec.
+
+### 2. Sampled-BCE vs full-softmax loss (20 epochs, n=200)
+
+| Loss | sec / epoch | val NDCG@10 | val Hit@10 |
+|---|---|---|---|
+| sampled-BCE (1 negative) | 14.1 | 0.5414 | 0.7987 |
+| full-softmax (all items) | 43.0 | **0.5862** | **0.8123** |
+
+The exact objective wins on quality (+0.045 NDCG@10) but costs ~3x per epoch, because its
+logits tensor is `[B, L, |I|+1]`. This is precisely the tradeoff that motivates sampled losses
+on large catalogs.
+
+### 3. Sequence-length scaling (Table V, 12 epochs)
+
+![scaling](assets/scaling.png)
+
+| n | sec/epoch | val NDCG@10 |
+|---|---|---|
+| 10 | 1.6 | 0.4111 |
+| 50 | 3.7 | 0.4660 |
+| 100 | 6.8 | 0.4791 |
+| 200 | 14.5 | 0.4770 |
+| 300 | 31.7 | 0.4894 |
+| 400 | 52.1 | 0.4980 |
+| 500 | 75.5 | 0.4902 |
+| 600 | 103.8 | 0.4973 |
+
+Cost grows super-linearly with the max sequence length (the O(n^2) self-attention term),
+while NDCG improves then plateaus around n≈300-400. The paper's headline holds: there are
+diminishing returns to ever-longer sequences, so the useful length is dataset-dependent.
 
 ## Quickstart
 

@@ -56,5 +56,21 @@ def measure_scaling(
     Expected shape of the result (the Table V story): `sec_per_epoch` rises with n
     (roughly with the O(n^2) attention term), while `val_ndcg` improves then plateaus.
     """
-    # COMPONENT C (see EXERCISES.md): implement this. Spec: tests/test_scaling.py
-    raise NotImplementedError("Component C: implement measure_scaling")
+    if train_fn is None:
+        train_fn = core_train
+
+    results = []
+    for n in n_values:
+        cfg = SASRecConfig(max_len=n, num_epochs=epochs, hidden_dim=hidden_dim, num_blocks=num_blocks, seed=seed)
+        t0 = time.perf_counter()
+        out = train_fn(cfg)
+        elapsed = time.perf_counter() - t0
+        results.append(
+            {
+                "n": n,
+                "sec_per_epoch": elapsed / epochs,
+                "val_ndcg": out["best_val_ndcg"],
+            }
+        )
+
+    return results

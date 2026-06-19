@@ -51,5 +51,7 @@ def full_softmax_loss(
     is why full softmax is memory/compute-heavy for large catalogs — the very reason
     sampled losses exist. You'll quantify that tradeoff in the experiments.
     """
-    # COMPONENT B (see EXERCISES.md): implement this. Spec: tests/test_losses_full.py
-    raise NotImplementedError("Component B: implement full_softmax_loss")
+    logits = feats @ item_embedding.weight.T
+    V = logits.size(-1)
+
+    return F.cross_entropy(logits.view(-1 , V), pos.view(-1), ignore_index = 0)

@@ -60,5 +60,27 @@ def profile_throughput(
     profiling (the scripts do this), and on CPU keep `torch.set_grad_enabled` matching
     what you're measuring (forward-only vs forward+backward).
     """
-    # COMPONENT D (see EXERCISES.md): implement this. Spec: tests/test_profiling.py
-    raise NotImplementedError("Component D: implement profile_throughput")
+    if not batches:
+        return {
+            "num_batches": 0,
+            "total_sec": 0.0,
+            "sec_per_batch": 0.0,
+            "batches_per_sec": 0.0,
+            "items_per_sec": 0.0,
+        }
+
+    total_items = sum(count_items(batches[i]) for i in range(len(batches)))
+
+    start = time.perf_counter()
+    for batch in batches:
+        step_fn(batch)
+    total_sec = time.perf_counter() - start
+
+    num_batches = len(batches)
+    return {
+        "num_batches": num_batches,
+        "total_sec": total_sec,
+        "sec_per_batch": total_sec / num_batches,
+        "batches_per_sec": num_batches / total_sec,
+        "items_per_sec": total_items / total_sec,
+    }

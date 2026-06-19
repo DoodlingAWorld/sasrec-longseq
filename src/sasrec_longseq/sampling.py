@@ -36,23 +36,6 @@ def sample_negatives_vectorized(
           * `1 <= neg <= num_items`
           * `neg != pos` at that position
         and every PAD position (`pos == 0`) has `neg == 0`.
-
-    Requirements
-    ------------
-    * Must be vectorized: NO Python loop over the B*L elements. (A small bounded
-      loop that re-samples only the *still-colliding* entries is fine and expected,
-      since you can't guarantee `neg != pos` in a single draw.)
-    * Use `torch.randint(..., generator=generator)` so results are reproducible.
-    * Edge case: when `num_items` is small, many draws collide with `pos`, so your
-      re-sample loop must actually converge, including the extreme where only one
-      valid negative exists per position (e.g. num_items=2 with every target = 1).
-
-    Hint (the standard pattern)
-    ---------------------------
-    1. Draw `neg` uniformly in [1, num_items] with the same shape as `pos`.
-    2. Find collisions: valid positions where `neg == pos`. While any remain,
-       re-draw ONLY those entries (boolean-mask assignment).
-    3. Zero out the pad positions at the end.
     """
     neg = torch.randint(1, num_items + 1, pos.shape, generator=generator)
     collision = (neg == pos) & (pos != 0)

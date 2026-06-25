@@ -87,13 +87,12 @@ downloader uses the proxy automatically.
 ```
 src/sasrec_longseq/
   core/             vendored SASRec (model, data, baseline loss, eval) from sasrec-pytorch
-  sampling.py       [component A] vectorized negative sampling
-  losses_full.py    [component B] full-vocabulary softmax loss
-  scaling.py        [component C] sequence-length scaling harness (Table V)
-  profiling.py      [component D] throughput profiler
+  sampling.py       vectorized negative sampling
+  losses_full.py    full-vocabulary softmax loss
+  scaling.py        sequence-length scaling harness (Table V)
+  profiling.py      throughput profiler
 scripts/            run_scaling.py, compare_losses.py, profile_throughput.py
 tests/              one spec file per component
-EXERCISES.md        what each component is and how to build it
 ```
 
 ## License

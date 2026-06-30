@@ -79,8 +79,7 @@ python scripts/compare_losses.py         # loss comparison
 python scripts/profile_throughput.py     # sampler + step throughput
 ```
 
-On a Meta devvm, prefix pip with `--proxy http://fwdproxy:8080`; the vendored dataset
-downloader uses the proxy automatically.
+If your network needs an HTTP proxy to reach the internet, pass it to `download_ml1m(proxy=...)`.
 
 ## Layout
 
